@@ -107,20 +107,21 @@ public class messenger {
                 boolean stop = false;
                 boolean cleanup = false;
                 byte[] data = new byte[32768];
-                int offset = 0;
+                //int offset = 0;
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 JsonParser parser = new JsonParser();
 
                 do {
                     if (cleanup) {
                         outputStream.reset();
-                        offset = 0;
+                        //offset = 0;
                         cleanup = false;
                     }
+                    // Запись в data производится от 0
                     int readBytes = mStream.read(data);
                     if (readBytes != -1) {
-                        outputStream.write(data, offset, readBytes);
-                        offset += readBytes;
+                        outputStream.write(data, 0, readBytes);
+                        //offset += readBytes;
                         outputStream.flush();
                         String result = outputStream.toString("utf-8");
                         if (result.endsWith("}")) {
