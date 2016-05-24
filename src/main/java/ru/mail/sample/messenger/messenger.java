@@ -42,7 +42,7 @@ public class messenger {
                 System.out.println(message);
                 System.out.println("Server time is: "+serverTime);
                 System.out.println();
-                System.out.println("Enter one of commands: exit, login, register");
+                System.out.println("Enter one of commands: exit, login, register, channellist");
             }
         }
 
@@ -90,6 +90,23 @@ public class messenger {
             }
         }
 
+        private static class Channellist implements Message {
+
+            String channelList;
+
+            @Override
+            public void parse(JsonObject json) {
+                JsonObject data = json.get("data").getAsJsonObject();
+                JsonArray array = data.get("channels").getAsJsonArray();
+                channelList = array.toString();
+            }
+
+            @Override
+            public void doOutput() {
+                System.out.println("Channellist = " + channelList);
+            }
+        }
+
         public HashMap<String, Message> mMessages = new HashMap<>();
 
         public MessageReceiver(Socket communicationSocket) throws IOException {
@@ -99,6 +116,7 @@ public class messenger {
             mMessages.put("welcome", new Welcome());
             mMessages.put("register", new Registration());
             mMessages.put("auth", new Auth());
+            mMessages.put("channellist", new Channellist());
         }
 
         @Override
@@ -265,13 +283,32 @@ public class messenger {
                     action.addProperty("action", "auth");
                     JsonObject data = new JsonObject();
                     data.addProperty("login", mLogin);
-                    data.addProperty("pass", md5(mPass));
+                    data.addProperty("pass", mPass);
                     action.add("data", data);
                     return action.toString();
                 }
                 return null;
             }
         }
+
+        private static class Channellist implements Action {
+
+            @Override
+            public boolean proceedInput(String input) {
+                return true;
+            }
+
+            @Override
+            public String getAction() {
+                JsonObject action = new JsonObject();
+                action.addProperty("action", "channellist");
+                JsonObject data = new JsonObject();
+                action.add("data", data);
+                return action.toString();
+            }
+        }
+
+
 
         private HashMap<String, Action> mActions = new HashMap<>();
 
@@ -280,6 +317,7 @@ public class messenger {
             mStream = new BufferedOutputStream(communicationSocket.getOutputStream());
             mActions.put("login", new Auth());
             mActions.put("register", new Registration());
+            mActions.put("channellist", new Channellist());
         }
 
         @Override
